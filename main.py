@@ -35,7 +35,7 @@ models.Base.metadata.create_all(bind=engine,checkfirst=True)
 
 transactions=[]
 
-@app.post("/mine_block/")
+@app.post("/mine_block/",tags=["Blockchain"])
 def mine_block(dataa: str, db: Session = Depends(get_db)):
         if not ( db.query(models.BlockchainModel).filter(models.BlockchainModel.id==1).first()):
             db_user=models.BlockchainModel(id=1,data="hi",timestamp= str(dt.datetime.now().strftime('%Y-%m-%d %H:%M:%S')),
@@ -55,7 +55,7 @@ def mine_block(dataa: str, db: Session = Depends(get_db)):
         db.commit()
         return block    
     
-@app.get("/blockchain")
+@app.get("/blockchain",tags=["Blockchain"])
 def get_blockchain( db: Session = Depends(get_db)):
     if not blockchain.is_chain_valid(db):
         return HTTPException(status_code=404,detail="Invalid blockchain")
@@ -64,15 +64,15 @@ def get_blockchain( db: Session = Depends(get_db)):
     # return cur.fetchall()
     return db.query(models.BlockchainModel).all()
 
-@app.get("/valid/")
+@app.get("/valid/",tags=["Blockchain"])
 def check_valid( db: Session = Depends(get_db)):
     return blockchain.is_chain_valid(db)
 
-@app.get("/previous_block/")
+@app.get("/previous_block/",tags=["Blockchain"])
 def previous_block( db: Session = Depends(get_db)):
     return blockchain.get_previous_block(db)
 
-@app.get("/hash_by_block_number/{index}")
+@app.get("/hash_by_block_number/{index}",tags=["Blockchain"])
 def get_hash_by_block_number(index:int,db :Session=Depends(get_db)):
     # return blockchain.chain[index+1]["previous_hash"]
     # cur.execute(f"""SELECT previous_hash FROM BLOCKS WHERE id = {index} """)
@@ -80,13 +80,13 @@ def get_hash_by_block_number(index:int,db :Session=Depends(get_db)):
     block=db.query(models.BlockchainModel).filter(models.BlockchainModel.id==index).first()
     return block.previous_hash
 
-@app.get("/block_number/{index}")
+@app.get("/block_number/{index}",tags=["Blockchain"])
 def get_block_by_index(index:int,db :Session=Depends(get_db)):
     # cur.execute(f"""SELECT * FROM BLOCKS WHERE id = {index} """)
     # return  cur.fetchone()
     return db.query(models.BlockchainModel).filter(models.BlockchainModel.id==index).first()
 
-@app.get("/block_between_time/{start_date}/{end_date}")
+@app.get("/block_between_time/{start_date}/{end_date}",tags=["Blockchain"])
 def block_between_time(start_date:str,end_date:str,db: Session=Depends(get_db)):
     # return f"start_date{start_date} and end_date {end_date}"
     if not blockchain.is_chain_valid(db):
@@ -152,7 +152,9 @@ async def get_current_active_user(
         current_user: Annotated[User, Depends(get_current_user)]):
             return current_user            
 
-@app.post("/signup")
+@app.post("/signup",tags=["User_Wallet"],
+          summary="Creating or Registering user for wallet",
+          description="Email must me different")
 def signup(register_user: Register_user,db : Session=Depends(get_db)):
     # Check if the username already exists
     # cur.execute("SELECT * FROM users WHERE username = %s", (register_user.username,))
@@ -181,7 +183,7 @@ def signup(register_user: Register_user,db : Session=Depends(get_db)):
     db.commit()
     return {"message": "User created successfully"}
 
-@app.post("/token", response_model=Token)
+@app.post("/token", response_model=Token,tags=["User_Wallet"])
 async def login_for_access_token(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()], db: Session = Depends(get_db) #-> username and password
 ):
@@ -198,7 +200,8 @@ async def login_for_access_token(
     )
     return {"access_token": access_token, "token_type": "bearer"}
 
-@app.post("/transaction")
+@app.post("/transaction",tags=["User_Wallet"],
+          summary="All your Transaction is appended when New Block is created ")
 async def perform_transaction(transaction: Transaction,
     current_user: Annotated[User, Depends(get_current_active_user)],db : Session=Depends(get_db)):#-> username and email_id
     
@@ -242,7 +245,7 @@ async def perform_transaction(transaction: Transaction,
     
     return ("Transaction successful")
 
-@app.get("/user_transaction/{user}")
+@app.get("/user_transaction/{user}",tags=["User_Wallet"])
 def user_last_10_transaction(user:str,db:Session=Depends(get_db)):
     # (cur.execute("SELECT * FROM transaction where sender= %s",(user,)))
     # return cur.fetchall()
