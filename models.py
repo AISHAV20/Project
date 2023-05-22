@@ -2,12 +2,12 @@ from sqlalchemy import Boolean, Column, Integer, String, Float
 from database import Base
 
 class BlockchainModel(Base):
-    __tablename__="blocks"
-    id=Column(Integer,primary_key=True,index=True)
-    data=Column(String)
-    timestamp=Column(String)
-    previous_hash=Column(String)
-    proof=Column(Integer)
+        __tablename__="blocks"
+        id=Column(Integer,primary_key=True,index=True)
+        data=Column(String)
+        timestamp=Column(String)
+        previous_hash=Column(String)
+        proof=Column(Integer)
     
 class UserModel(Base):
         __tablename__="users"
