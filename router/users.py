@@ -5,6 +5,7 @@ from passlib.context import CryptContext
 from datetime import datetime, timedelta
 from jose import JWTError, jwt
 import models
+import uuid
 from database import get_db, engine
 from schema import (Token,
                     TokenData,
@@ -184,6 +185,7 @@ async def perform_transaction(transaction: Transaction,
     db_data = models.TransactionModel(
         sender=current_user.username, reciever=recipient_obj.username, amount=transaction.amount)
     db.add(db_data)
+    db.commit()
 
     return ("Transaction successful")
 
@@ -194,5 +196,11 @@ def user_last_10_transaction(user: str, db: Session = Depends(get_db)):
     # return cur.fetchall()
     db_data = db.query(models.TransactionModel).filter(
         models.TransactionModel.sender == user).all()
+    
+    dic_data=[]
+    for data in db_data:
+        dic_data.append({"user":user,
+            "reciever":data.reciever,
+            "Amount":data.amount})
 
-    return db_data
+    return dic_data
