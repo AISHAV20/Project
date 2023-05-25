@@ -190,16 +190,16 @@ async def perform_transaction(transaction: Transaction,
     return ("Transaction successful")
 
 
-@router.get("/user_transaction/{user}", tags=["User_Wallet"])
-def user_last_10_transaction(user: str, db: Session = Depends(get_db)):
+@router.get("/user_transaction", tags=["User_Wallet"])
+def user_last_10_transaction(current_user:Annotated[User, Depends(get_current_user)], db: Session = Depends(get_db)):
     # (cur.execute("SELECT * FROM transaction where sender= %s",(user,)))
     # return cur.fetchall()
     db_data = db.query(models.TransactionModel).filter(
-        models.TransactionModel.sender == user).all()
+        models.TransactionModel.sender == current_user.username).all()
     
     dic_data=[]
     for data in db_data:
-        dic_data.append({"user":user,
+        dic_data.append({"user":current_user.username,
             "reciever":data.reciever,
             "Amount":data.amount})
 
